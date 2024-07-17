@@ -1,5 +1,5 @@
 ---
-title: "Katja Karhi Thesis 2024 - vinca minor current and future imapacts"
+title: "Katja Karhi Thesis 2024 - Vinca minor"
 output: html_notebook
 ---
 ##LIBRARY
@@ -63,7 +63,6 @@ simpsonplot
 plot(simpsonplot)
 
 ```
-
 ```{r Diversity Analysis Using Percent Cover}
 library(tidyverse)
 setwd("/Users/katja/Documents/Master's Thesis/dataforRcsv/")
@@ -179,7 +178,6 @@ summary_stats_df <- data.frame(
 print(summary_stats_df)
 
 ```
-
 ```{R Field - NMDS Plots}
 setwd("/Users/katja/Documents/Master's Thesis/dataforRcsv/")
 data=read_csv("fieldalgomaupercentcovernmds.csv", na="?")
@@ -196,74 +194,24 @@ data$nmds2 <- ord$points[,2]
 attach(data)
 nmds1
 
-results <- with(data, adonis(vegdist(data[ ,4:36]) ~ treatment, permutations =999,method = "bray")) #permanova coding
+results <- with(data, adonis(vegdist(data[ ,4:36]) ~ treatment, permutations =999,method = "bray")) #PERMANOVA coding
 results
 
 outlier(nmds1)
-#dont run if not significant
-pairwise.adonis2(data[,4:36]~treatment, data=data) #if differences
 
-my_colors <- c("darkgreen", "lightblue", "lightgreen")
+pairwise.adonis2(data[,4:36]~treatment, data=data) #dont run if not significant
 
-plot1 <- ggplot(data, aes(x = nmds1, y = nmds2, color = factor(treatment))) +
-  geom_point() +
-  stat_ellipse(data = filter(data, treatment == "uninvaded"), aes(group = treatment), color = "darkgreen") +
-  stat_ellipse(data = filter(data, treatment == "edge"), aes(group = treatment), color = "lightblue") +
-  stat_ellipse(data = filter(data, treatment == "invaded"), aes(group = treatment), color = "lightgreen") +
-  scale_color_manual(values = my_colors, breaks = c("uninvaded", "edge", "invaded")) +
-  theme_classic()  + ggtitle("AlgomaU Field NMDS Plot - Percent Cover")
-plot1
+#NMDS Plot
+my_colors <- c("Uninvaded" = "grey", "Edge" = "darkgreen", "Invaded" = "cadetblue")
 
-
-my_colors_updated <- c("Uninvaded" = "grey", "Edge" = "darkgreen", "Invaded" = "cadetblue")
-
-
-plot1_updated <- ggplot(data, aes(x = nmds1, y = nmds2, color = factor(treatment, levels = c("uninvaded", "edge", "invaded"), labels = c("Uninvaded", "Edge", "Invaded")))) +
-  geom_point() +
-  stat_ellipse(data = filter(data, treatment == "uninvaded"), aes(group = treatment), color = "grey") +
-  stat_ellipse(data = filter(data, treatment == "edge"), aes(group = treatment), color = "darkgreen") +
-  stat_ellipse(data = filter(data, treatment == "invaded"), aes(group = treatment), color = "cadetblue") +
-  scale_color_manual(values = my_colors_updated) +
-  theme_classic() +
-  annotate("text", x = Inf, y = Inf, label = "stress = 0.262", hjust = 1.05, vjust = 32, size = 3.5) +
-  # Remove legend title
-  labs(color = NULL)
-
-plot1_updated
-
-
-#numbers as points graph 
-my_colors_updated <- c("Uninvaded" = "grey", "Edge" = "darkgreen", "Invaded" = "cadetblue")
-
-# Update your plot code to use 'year' as point shapes
-plot1_updated <- ggplot(data, aes(x = nmds1, y = nmds2, color = factor(treatment, levels = c("uninvaded", "edge", "invaded"), labels = c("Uninvaded", "Edge", "Invaded")), shape = factor(year))) +
+finalplot <- ggplot(data, aes(x = nmds1, y = nmds2, color = factor(treatment, levels = c("uninvaded", "edge", "invaded"), labels = c("Uninvaded", "Edge", "Invaded")), shape = factor(year))) +
   geom_point() +
   # Ensure stat_ellipse uses the new factor levels correctly; might need adjustment if it doesn't work as expected
   stat_ellipse(data = filter(data, treatment == "uninvaded"), aes(group = treatment), color = "grey") +
   stat_ellipse(data = filter(data, treatment == "edge"), aes(group = treatment), color = "darkgreen") +
   stat_ellipse(data = filter(data, treatment == "invaded"), aes(group = treatment), color = "cadetblue") +
   # Apply the updated color definitions ensuring they match the new labels
-  scale_color_manual(values = my_colors_updated) +
-  theme_classic() +
-  annotate("text", x = Inf, y = Inf, label = "PERMANOVA: F(2,50) = 20.37, P =0.001, R² = 0.45", hjust = 1, vjust = 29.5 , size = 3.5) +
-  annotate("text", x = Inf, y = Inf, label = "STRESS = 0.14", hjust = 1, vjust = 28, size = 3.5) +
-  # Remove legend title
-  labs(color = NULL) +
-  # Set shape labels
-  scale_shape_manual(values = c("2020" = 1, "2023" = 2))
-plot1_updated <- plot1_updated +
-  labs(color = "Plot Type", shape = "Year")
-
-plot1_updated
-
-plot1_updated <- ggplot(data, aes(x = nmds1, y = nmds2, color = factor(treatment, levels = c("uninvaded", "edge", "invaded"), labels = c("Uninvaded", "Edge", "Invaded")), shape = factor(year))) +
-  geom_point() +
-  # Ensure stat_ellipse uses the new factor levels correctly; might need adjustment if it doesn't work as expected
-  stat_ellipse(data = filter(data, treatment == "uninvaded"), aes(group = treatment), color = "grey") +
-  stat_ellipse(data = filter(data, treatment == "edge"), aes(group = treatment), color = "darkgreen") +
-  stat_ellipse(data = filter(data, treatment == "invaded"), aes(group = treatment), color = "cadetblue") +
-  # Apply the updated color definitions ensuring they match the new labels
-  scale_color_manual(values = my_colors_updated) +
+  scale_color_manual(values = my_colors) +
   theme_classic() +
   annotate("text", x = Inf, y = Inf, label = expression("PERMANOVA: F"[2*","*50] == "20.37, P = 0.001, R² = 0.45"), hjust = 1, vjust = 1, size = 3.5) +
   annotate("text", x = Inf, y = Inf, label = "STRESS = 0.14", hjust = 1, vjust = 2.5, size = 3.5) +
@@ -272,11 +220,10 @@ plot1_updated <- ggplot(data, aes(x = nmds1, y = nmds2, color = factor(treatment
   # Set shape labels
   scale_shape_manual(values = c("2020" = 1, "2023" = 2))
 
-plot1_updated <- plot1_updated +
+finalplot <- finalplot +
   labs(color = "Plot Type", shape = "Year")
 
-plot1_updated
-
+finalplot
 ```
 ```{r Field - Nutrients}
 #emmeans(model, list(pairwise ~ treatment), adjust = "tukey") #posthoc
@@ -329,7 +276,7 @@ model5 <- aov(Magnesium ~ plottype, data=data)
 summary(model5)
 anova(model5)
 
-# Model 6
+#SIGNIFICANT MODEL
 shapiro_test(data, Calcium)
 
 model6 <- aov(Calcium ~ plottype, data=data)
@@ -394,7 +341,7 @@ model12 <- aov(logna ~ plottype, data=data)
 summary(model12)
 anova(model12)
 
-# Model 13
+#SIGNIFICANT MODEL SULFUR
 shapiro_test(data, S_ppm)
              
 model13 <- aov(S_ppm ~ plottype, data=data)
@@ -483,10 +430,6 @@ shapiro_test(data, CN_ratio)
 Model24 <- aov(CN_ratio ~ plottype, data=data)
 anova(Model24)
 
-
-
-
-
 #non normal data
 # Model 8
 shapiro_test(data, logpH)
@@ -511,7 +454,513 @@ S_ppm.df
 calcium.df
 ```
 
-
-
-
 ##CHAPTER 2
+```{r Pot Diversity - Percent Cover}
+library(plyr)
+setwd("/Users/katja/Documents/Master's Thesis/dataforRcsv/")
+
+#percent cover 
+data=read_csv("percentcoverpot.csv", na="?")
+attach(data)
+
+ddply(data,~potid,function(x)+ data.frame(RICHNESS=sum(x[-1]>0)))
+ ddply(data,~potid,function(x)+ data.frame(ABUNDANCE=sum(x[-1])))
+
+ddply(data,~potid,function(x)
++         data.frame(SHANNON=diversity(x[-1], index="shannon"))
+)
+
+plot(simpsonplot)
+
+setwd("/Users/katja/Documents/Master's Thesis/dataforRcsv/")
+data=read_csv("potdiversitycalculations.csv", na="?")
+attach(data)
+
+library(readr)
+library(car)
+library(dunn.test)
+
+#simpsons percent
+shapiro.test(simpsonsdiversitypercent)
+model<-aov(simpsonsdiversitypercent ~ shade*invasion , data=data)
+model
+Anova(model, type="III")
+TukeyHSD(model)
+```
+```{r Principal Component analysis}
+setwd("/Users/katja/Documents/Master's Thesis/dataforRcsv/")
+data=read_csv("growthtracking.csv", na="?")
+attach(data)
+str(data)
+data
+print(data)
+# MAPLE
+maple_data <- subset(data, speciesid %in% c("maple"))
+maple_data
+
+maple_data2<-subset(maple_data,graphdate=="10-Jul")
+maple_data2
+
+dfdata <- maple_data2 %>%
+  group_by(potid, sampledate, shadetreatment, invasiontreatment, treatment
+) %>%
+  summarise(
+    leaflength = mean(longestleaflength_cm, na.rm = TRUE),
+    height = mean(height_cm, na.rm = TRUE),
+    numberofleaves = mean(num_leaves, na.rm = TRUE)
+  )
+dfdata
+
+#HEMPNETTLE
+hempnettledata1 <- subset(data, speciesid %in% c("hempnettle"))
+hempnettledata1
+
+hempnettledata<-subset(hempnettledata1,graphdate=="10-Jul")
+hempnettledata
+
+hempnettledataf <- hempnettledata %>%
+  group_by(potid, sampledate, shadetreatment, invasiontreatment, treatment
+) %>%
+  summarise(
+    leaflength = mean(longestleaflength_cm, na.rm = TRUE),
+    height = mean(height_cm, na.rm = TRUE),
+    numberofleaves = mean(num_leaves, na.rm = TRUE)
+  )
+hempnettledataf
+
+##BINDWEED
+bindweeddata1 <- subset(data, speciesid %in% c("bindweed"))
+bindweeddata1
+
+bindweeddata<-subset(bindweeddata1,graphdate=="10-Jul")
+bindweeddata
+
+bindweeddataf <- bindweeddata %>%
+  group_by(potid, sampledate, shadetreatment, invasiontreatment, treatment
+) %>%
+  summarise(
+    leaflength = mean(longestleaflength_cm, na.rm = TRUE),
+    height = mean(height_cm, na.rm = TRUE),
+    numberofleaves = mean(num_leaves, na.rm = TRUE)
+  )
+bindweeddataf
+print(bindweeddataf)
+
+#PCA PLOTS
+library(ggbiplot)
+library(pairwiseAdonis)
+library(FactoMineR) 
+library(factoextra)
+
+#MAPLE
+dfdata<- na.omit(dfdata)
+dfdata
+traits.1 =  dfdata[,6:8]
+traits.1
+cor(traits.1) 
+traits.pc = traits.1 %>% 
+  princomp(cor=T) 
+summary(traits.pc) 
+ggscreeplot(traits.pc) 
+biplot(traits.pc)
+
+set.seed(19900730) 
+
+results11 <- with(dfdata, adonis(vegdist(dfdata[ ,6:8]) ~ shadetreatment * invasiontreatment, permutations =999,method = "bray")) 
+results11
+
+results <- pairwise.adonis2(dfdata[, 6:8] ~ shadetreatment * invasiontreatment, data=dfdata)
+results
+
+
+T1 <- fviz_pca_biplot(  
+  traits.pc,   geom = "point",   
+  pointshape = 16, 
+  label = "all",  
+  fill.ind = dfdata$treatment,   
+  addEllipses = TRUE,  
+  ellipse.type ="confidence",   
+  ellipse.level = 0.95,  
+  col.ind = dfdata$treatment,   
+  ellipse.col = dfdata$treatment,   
+  col.var = "black",   
+  repel = TRUE,   
+  legend.title = "Treatment (ShadeInvasion)",    
+  ggtheme = theme_classic() ) + ggtitle("Acer spp.") + 
+  theme(plot.title = element_text(face = "italic"))
+
+T1
+
+#HEMPNETTLE 
+hempnettledataf<- na.omit(hempnettledataf)
+traits.2 =  hempnettledataf[,6:8]
+traits.2
+cor(traits.2) 
+traits.pc2 = traits.2 %>% 
+  princomp(cor=T) 
+summary(traits.pc2) 
+ggscreeplot(traits.pc2) 
+biplot(traits.pc2)
+
+set.seed(19900730) 
+
+results21 <- with(hempnettledataf, adonis(vegdist(hempnettledataf[ ,6:8]) ~ shadetreatment * invasiontreatment, permutations =999,method = "bray")) 
+results21
+
+results2 <- pairwise.adonis2(hempnettledataf[, 6:8] ~ invasiontreatment, data=hempnettledataf)
+results2
+
+
+T2 <- fviz_pca_biplot(  
+  traits.pc2,   geom = "point",   
+  pointshape = 16, 
+  label = "all",  
+  fill.ind = hempnettledataf$treatment,   
+  addEllipses = TRUE,  
+  ellipse.type ="confidence",   
+  ellipse.level = 0.95,  
+  col.ind = hempnettledataf$treatment,   
+  ellipse.col = hempnettledataf$treatment,   
+  col.var = "black",   
+  repel = TRUE,   
+  legend.title = "Treatment (ShadeInvasion)",    
+  ggtheme = theme_classic() ) + ggtitle("Galeopsis tetrahit") + 
+  theme(plot.title = element_text(face = "italic"))
+
+T2
+
+#BINDWEED
+bindweeddataf<- na.omit(bindweeddataf)
+traits.3 =  bindweeddataf[,6:8]
+traits.3
+cor(traits.3) 
+traits.pc3 = traits.3 %>% 
+  princomp(cor=T) 
+summary(traits.pc3) 
+ggscreeplot(traits.pc3) 
+biplot(traits.pc3)
+
+set.seed(19900730) 
+
+results31 <- with(bindweeddataf, adonis(vegdist(bindweeddataf[ ,6:8]) ~ shadetreatment * invasiontreatment, permutations =999,method = "bray")) 
+results31
+
+results3 <- pairwise.adonis2(bindweeddataf[, 6:8] ~ shadetreatment*invasiontreatment, data=bindweeddataf)
+results3
+
+bindweeddataf$treatment <- factor(bindweeddataf$treatment, 
+                                  levels = c("earlyinvaded", "earlyuninvaded", "controlinvaded", "controluninvaded", "normalinvaded", "normaluninvaded"), 
+                                  labels = c("Early/Invaded", "Early/Uninvaded", "Control/Invaded", "Control/Uninvaded", "Normal/Invaded", "Normal/Uninvaded"))
+
+T3 <- fviz_pca_biplot(
+  traits.pc3,
+  geom = "point",
+  pointshape = 16,
+  label = "all",
+  fill.ind = bindweeddataf$treatment, # Ensure this is a factor with the new level names
+  addEllipses = TRUE,
+  ellipse.type = "confidence",
+  ellipse.level = 0.95,
+  col.ind = bindweeddataf$treatment, # Ensure this is the same factor
+  ellipse.col = bindweeddataf$treatment, # Same here
+  col.var = "black",
+  repel = TRUE,
+  legend.title = "Treatment (ShadeInvasion)",
+  ggtheme = theme_classic()
+) + ggtitle("Fallopia cilinodis") +
+  theme(plot.title = element_text(face = "italic")) +
+  scale_color_discrete(name = "Treatment (Shade/Invasion)") +
+  scale_fill_discrete(name = "Treatment (Shade/Invasion)")  # This should now work with your new factor levels
+
+T3
+T1
+T2
+
+library(patchwork)
+
+# Use the `&` operator to denote the plots should be plotted together
+combined_plot <- (T1 / T2 / T3) + 
+                 plot_layout(guides = 'collect') & 
+                 theme(legend.position = 'bottom')
+
+# The `guides = 'collect'` argument specifies that the legends should be collected into one single legend
+# `theme(legend.position = 'bottom')` ensures that the collected legend is placed at the bottom
+
+# To remove legends from T1 and T2 but keep T3's, you can do the following:
+T1 <- T1 + theme(legend.position = "none")
+T2 <- T2 + theme(legend.position = "none")
+# T3 will retain its legend by default
+
+# Now combine them again
+combined_plot <- T1 + T2 + T3 + plot_layout(guides = 'collect')
+# Save the combined plot, adjust the width and height as needed for your specific size requirements
+ggsave("PCAPLOTTHESIS.png", combined_plot, width = 16, height = 5, dpi = 300)
+
+```
+```{r Growth Tracking - Acer}
+setwd("/Users/katja/Documents/Master's Thesis/dataforRcsv/")
+data=read_csv("growthtracking.csv", na="?")
+attach(data)
+str(data)
+
+temp.data <- subset(data, speciesid=="maple")
+temp.data
+
+temp.data2<-subset(temp.data,graphdate=="10-Jul")
+temp.data2
+#using this code to get the means and std error for the tables 
+tempdata1 <- subset(temp.data2, treatment=="controluninvaded") 
+tempdata1
+mean(tempdata1$num_leaves, na.rm=TRUE) 
+std.error(tempdata1$num_leaves, na.rm=TRUE)
+
+shapiro.test(temp.data2$lognum_leaves)
+
+model1<-lmer(lognum_leaves ~ shadetreatment*invasiontreatment + (1|potid), data = temp.data2)
+model1 
+Anova(model1)
+
+# Perform Tukey HSD test for shadetreatment * invasiontreatment interaction
+emm_interaction <- emmeans(model1, ~ shadetreatment * invasiontreatment)
+tukey_interaction <- pairs(emm_interaction, adjust = "tukey")
+print("Tukey HSD results for shadetreatment * invasiontreatment interaction:")
+print(tukey_interaction)
+
+# Perform Tukey HSD test for shadetreatment
+emm_shade <- emmeans(model1, ~ shadetreatment)
+tukey_shade <- pairs(emm_shade, adjust = "tukey")
+print("Tukey HSD results for shadetreatment:")
+print(tukey_shade)
+
+# Perform Tukey HSD test for invasiontreatment
+emm_invasion <- emmeans(model1, ~ invasiontreatment)
+tukey_invasion <- pairs(emm_invasion, adjust = "tukey")
+print("Tukey HSD results for invasiontreatment:")
+print(tukey_invasion)
+
+```
+```{r Growth Tracking - Hempnettle}
+setwd("/Users/katja/Documents/Master's Thesis/dataforRcsv/")
+data=read_csv("growthtracking.csv", na="?")
+attach(data)
+str(data)
+
+temp.data <- subset(data, speciesid=="hempnettle")
+temp.data
+
+temp.data2<-subset(temp.data,graphdate=="10-Jul")
+temp.data2
+#using this code to get the means and std error for the tables 
+tempdata1 <- subset(temp.data2, treatment=="earlyinvaded") 
+tempdata1
+mean(tempdata1$longestleaflength_cm, na.rm=TRUE) 
+std.error(tempdata1$longestleaflength_cm, na.rm=TRUE)
+
+shapiro.test(temp.data2$longestleaflength_cm)
+
+model1<-lmer(longestleaflength_cm ~ shadetreatment*invasiontreatment + (1|potid), data = temp.data2)
+model1 
+Anova(model1, type="III")
+
+# Perform Tukey HSD test for shadetreatment * invasiontreatment interaction
+emm_interaction <- emmeans(model1, ~ shadetreatment * invasiontreatment)
+tukey_interaction <- pairs(emm_interaction, adjust = "tukey")
+print("Tukey HSD results for shadetreatment * invasiontreatment interaction:")
+print(tukey_interaction)
+
+# Perform Tukey HSD test for shadetreatment
+emm_shade <- emmeans(model1, ~ shadetreatment)
+tukey_shade <- pairs(emm_shade, adjust = "tukey")
+print("Tukey HSD results for shadetreatment:")
+print(tukey_shade)
+
+# Perform Tukey HSD test for invasiontreatment
+emm_invasion <- emmeans(model1, ~ invasiontreatment)
+tukey_invasion <- pairs(emm_invasion, adjust = "tukey")
+print("Tukey HSD results for invasiontreatment:")
+print(tukey_invasion)
+```
+```{r Growth Tracking - Bindweed}
+library(tidyverse)
+setwd("/Users/katja/Documents/Master's Thesis/dataforRcsv/")
+data=read_csv("growthtracking.csv", na="?")
+attach(data)
+str(data)
+
+temp.data <- subset(data, speciesid=="bindweed")
+temp.data
+
+temp.data2<-subset(temp.data,graphdate=="10-Jul")
+temp.data2
+#using this code to get the means and std error for the tables 
+tempdata1 <- subset(temp.data2, treatment=="controluninvaded") 
+tempdata1
+mean(tempdata1$height_cm, na.rm=TRUE) 
+std.error(tempdata1$height_cm, na.rm=TRUE)
+
+shapiro.test(temp.data2$longestleaflength_cm)
+
+model1<-lmer(longestleaflength_cm ~ shadetreatment*invasiontreatment + (1|potid), data = temp.data2)
+model1 
+Anova(model1,type="III")
+
+# Perform Tukey HSD test for shadetreatment * invasiontreatment interaction
+emm_interaction <- emmeans(model1, ~ shadetreatment * invasiontreatment)
+tukey_interaction <- pairs(emm_interaction, adjust = "tukey")
+print("Tukey HSD results for shadetreatment * invasiontreatment interaction:")
+print(tukey_interaction)
+
+# Perform Tukey HSD test for shadetreatment
+emm_shade <- emmeans(model1, ~ shadetreatment)
+tukey_shade <- pairs(emm_shade, adjust = "tukey")
+print("Tukey HSD results for shadetreatment:")
+print(tukey_shade)
+
+# Perform Tukey HSD test for invasiontreatment
+emm_invasion <- emmeans(model1, ~ invasiontreatment)
+tukey_invasion <- pairs(emm_invasion, adjust = "tukey")
+print("Tukey HSD results for invasiontreatment:")
+print(tukey_invasion)
+
+```
+```{r Stepwise Regression - unused in thesis}
+library(tidyverse)
+library(lme4)
+library(car)
+library(effects)
+library(MASS)
+setwd("/Users/katja/Documents/Master's Thesis/dataforRcsv/")
+data=read_csv("growthtracking.csv", na="?")
+attach(data)
+str(data)
+
+#Stepwise Regression 
+ 
+temp.data <- subset(data, speciesid=="maple") 
+temp.data 
+df.summarylength <- temp.data %>%   
+  group_by(potid, season, sampledate, shadetreatment, invasiontreatment) %>%   
+  summarise(se = sd(longestleaflength_cm, na.rm = TRUE),     
+                 longestleaflength = mean(longestleaflength_cm, na.rm = TRUE)   )
+df.summarylength
+
+#Stepwise Regression 
+initial_model <- lm(longestleaflength ~ shadetreatment * invasiontreatment * season, data = df.summarylength)
+final_model <- stepAIC(initial_model, direction = "both", trace = TRUE) 
+ 
+# View the selected model - the lower the AIC the better the model 
+summary(final_model) 
+## Model comparisons - technically we saw no ranom effects is better but we can keep them in 
+lmm_model1 <- lmer(longestleaflength ~ shadetreatment + invasiontreatment + season + (1 | potid), data = df.summarylength) 
+###without effects is only slightly better, so lets keep the effects in 
+lmm_model3 <- lm(longestleaflength ~ shadetreatment + invasiontreatment + season , data = df.summarylength) 
+#Lower AIC is better model 
+aic_bic <- data.frame(   Model = c("lmm_model1","lmm_model3"),   
+                         AIC = AIC(lmm_model1, lmm_model3),   
+                         BIC = BIC(lmm_model1,lmm_model3) ) 
+print(aic_bic)
+ 
+### Most parsimoneous model based on AICs - we added in the random effect here but it can also be removed to just have an lm model 
+lmm_model <- lmer(longestleaflength ~  shadetreatment + invasiontreatment + season + (1 | potid), data = df.summarylength) 
+summary(lmm_model) 
+Anova(lmm_model,type = "III") 
+ 
+##posthoc test of interaction pairwise differences - yikes! Looks scary right, dont worry, we can visualize this so its cleaner 
+em_means <- emmeans(lmm_model, ~ shadetreatment*season) 
+pairwise_comparisons <- pairs(em_means) 
+summary(pairwise_comparisons) 
+ 
+##Visualize #Visualizing the marginal effects can provide insights into the overall pattern of the interaction.
+em_means <- emmeans(lmm_model, ~ shadetreatment*season) 
+plot(em_means, comparisons = TRUE) 
+ 
+# Create conditional effects plot 
+
+#to change the organization of the interaction plots, change in the model
+df.summarylength$shadetreatment <- factor(df.summarylength$shadetreatment, levels = c("early", "normal", "none"))
+df.summarylength$season <- factor(df.summarylength$season, levels = c("early", "mid", "late"))
+
+effect_plot <- plot(allEffects(lmm_model, xlevels = list(shadetreatment = c("early", "normal", "none"),
+                                                         season = c("early", "mid", "late"))))
+```
+```{r Growth Tracking Linear Mixed Models w Random Effects - unused in thesis}
+setwd("/Users/katja/Documents/Master's Thesis/dataforRcsv/")
+data=read_csv("growthtracking.csv", na="?")
+attach(data)
+str(data)
+temp.data <- subset(data, speciesid=="hempnettle")
+temp.data
+
+hempnettledataf <- temp.data %>%
+  group_by(potid, sampledate, shadetreatment, invasiontreatment, treatment, season ) %>%
+  summarise(
+    leaflength = mean(longestleaflength_cm, na.rm = TRUE),
+    height = mean(height_cm, na.rm = TRUE),
+    numberofleaves = mean(lognum_leaves, na.rm = TRUE)
+    ) 
+hempnettledataf
+
+model.hempnettle.longest.leaf <- lmer(leaflength ~ shadetreatment + invasiontreatment + season + (1|potid), data = hempnettledataf)
+qqnorm(resid(model.hempnettle.longest.leaf)) 
+plot(model.hempnettle.longest.leaf)
+
+model.hempnettle.height <- lmer(height ~ season +  shadetreatment*invasiontreatment + (1|potid), data = hempnettledataf)
+qqnorm(resid(model.hempnettle.height)) 
+plot(model.hempnettle.height)
+
+model.hempnettle.numberleaves <- lmer(numberofleaves ~ season*shadetreatment*invasiontreatment + (1|potid), data = hempnettledataf)
+qqnorm(resid(model.hempnettle.numberleaves)) 
+plot(model.hempnettle.numberleaves)
+
+leaflengthanova <- Anova(model.hempnettle.longest.leaf, type = "III")
+leaflengthanova
+heightanova <- Anova(model.hempnettle.height, type = "III")
+heightanova
+numberleavesanova <- Anova(model.hempnettle.numberleaves, type = "III")
+numberleavesanova
+ numberleavesemmeansshade <- emmeans(model.hempnettle.numberleaves, pairwise ~ shadetreatment, 
+                                      adjust = "tukey")
+  numberleavesemmeansshade
+
+#means
+hempmeansdata <- subset(temp.data, season=="late")
+hempmeansdata
+
+hempmeans <- hempmeansdata %>%
+  group_by(shadetreatment, invasiontreatment ) %>%  
+  summarise(     
+    leaflength = mean(longestleaflength_cm, na.rm = TRUE),  
+    leaflengthse = std.error(longestleaflength_cm, na.rm = TRUE),  
+    height = mean(height_cm, na.rm = TRUE),  
+    heightse = std.error(height_cm, na.rm = TRUE),
+    numberofleaves = mean(num_leaves, na.rm = TRUE),
+    numberofleavesse = std.error(num_leaves, na.rm = TRUE) 
+    ) 
+hempmeans
+
+hempmeansinvasion <- hempmeansdata %>%
+  group_by(invasiontreatment ) %>%  
+  summarise(     
+    leaflength = mean(longestleaflength_cm, na.rm = TRUE),  
+    leaflengthse = std.error(longestleaflength_cm, na.rm = TRUE),  
+    height = mean(height_cm, na.rm = TRUE),  
+    heightse = std.error(height_cm, na.rm = TRUE),
+    numberofleaves = mean(num_leaves, na.rm = TRUE),
+    numberofleavesse = std.error(num_leaves, na.rm = TRUE) 
+    ) 
+hempmeansinvasion
+
+
+hempmeansshade <- hempmeansdata %>%
+  group_by(shadetreatment ) %>%  
+  summarise(     
+    leaflength = mean(longestleaflength_cm, na.rm = TRUE),  
+    leaflengthse = std.error(longestleaflength_cm, na.rm = TRUE),  
+    height = mean(height_cm, na.rm = TRUE),  
+    heightse = std.error(height_cm, na.rm = TRUE),
+    numberofleaves = mean(num_leaves, na.rm = TRUE),
+    numberofleavesse = std.error(num_leaves, na.rm = TRUE) 
+    ) 
+hempmeansshade
+```
+
