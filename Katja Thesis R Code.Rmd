@@ -1,0 +1,517 @@
+---
+title: "Katja Karhi Thesis 2024 - vinca minor current and future imapacts"
+output: html_notebook
+---
+##LIBRARY
+```{r Library}
+library(tidyverse) 
+library(effects)
+library(plotrix) 
+library(vegan)
+library(fitdistrplus)
+library(raster) 
+library(lmodel2) 
+library(lme4) 
+#library(Hmisc)
+library(plyr)
+detach(package:plyr)
+detach(package:dplyr)
+library(ape) 
+library(nlme)
+library(sm) 
+library(car) 
+library(smatr)
+library(scatterplot3d) 
+library(lsmeans) 
+#library(psych)
+
+library(MuMIn) 
+library(outliers) 
+library(dplyr) 
+library(devtools) 
+library(FactoMineR) 
+library(factoextra) 
+library(ade4) 
+library(cluster)
+library(GGally) 
+library(ggplot2) 
+library(multcomp) 
+library(pairwiseAdonis)
+library(RColorBrewer)
+library(ggbiplot)
+```
+
+##CHAPTER 1
+```{r Simpsons/Shannons Diversity Calculations DFs}
+setwd("/Users/katja/Documents/Master's Thesis/dataforRcsv/")
+data=read_csv("fieldalgomaupercentcover.csv", na="?")
+attach(data)
+summary(data)
+
+ddply(data,~plot.year,function(x)+ data.frame(RICHNESS=sum(x[-1]>0)))
+ ddply(data,~plot.year,function(x)+ data.frame(ABUNDANCE=sum(x[-1])))
+
+ddply(data,~plot.year,function(x)
++         data.frame(SHANNON=diversity(x[-1], index="shannon"))
+)
+shannonplot<-diversity(data[-1], index="shannon")
+shannonplot
+plot(shannonplot)
+
+simpsonplot<-diversity(data[-1], index="simpson")
+simpsonplot
+plot(simpsonplot)
+
+```
+
+```{r Diversity Analysis Using Percent Cover}
+library(tidyverse)
+setwd("/Users/katja/Documents/Master's Thesis/dataforRcsv/")
+data=read_csv("fieldalgomaupercentcoverdiversitycalculations.csv", na="?")
+attach(data)
+data
+str(data)
+summary(data)
+
+#check data is numeric
+is.numeric(data$simpsonsdiversity)
+data
+ 
+#check for assumptions
+shapiro.test(simpsonsdiversity)
+shapiro.test(logsimpson)
+shapiro.test(shannondiversity)
+shapiro.test(logshannon)
+
+#Simpson's Test
+library(dunn.test) 
+
+kruskal_result <- kruskal.test(simpsonsdiversity ~ treatment, data = data) 
+print(kruskal_result) 
+ 
+if (kruskal_result$p.value < 0.05) {    
+  posthoc_result <- dunn.test(data$simpsonsdiversity, g = data$treatment, method = "bonferroni")   
+ 
+print(posthoc_result) }
+
+#Shannon Test
+kruskal_result <- kruskal.test(shannondiversity ~ treatment, data = data) 
+print(kruskal_result) 
+if (kruskal_result$p.value < 0.05) {   
+  posthoc_result <- dunn.test(data$simpsonsdiversity, g = data$treatment, method = "bonferroni")   
+print(posthoc_result) }
+
+
+#Boxplots for Simpson's diversity
+#By year 
+simpsonsdiversity <- ggplot(data, aes(x = year, y = simpsonsdiversity, fill = year)) +
+  geom_boxplot() +
+  theme_classic() +
+  labs(
+    x = "Year",
+    y = "Simpsons Diversity",
+    title = "Simpsons Diversity AlgomaU Field"
+  ) +
+  ylim(0, 1) +
+  scale_fill_brewer(palette = "GnBu") +  # Use the "Greens" palette directly
+  theme(
+    plot.title = element_text(hjust = 0.5),  # Center the title
+    axis.title.x = element_text(vjust = -0.5),  # Adjust X-axis title position
+    axis.title.y = element_text(vjust = -0.5)  # Adjust Y-axis title position
+  )
+simpsonsdiversity
+#By invasion treatment 
+simpsonsdiversityinvasion <- ggplot(data, aes(x = treatment, y = simpsonsdiversity, fill = treatment)) +
+  geom_boxplot() +
+  theme_classic() +
+  labs(
+    x = "Plot Type",
+    y = "Simpsons Diversity",
+    title = "Simpsons Diversity AlgomaU Field"
+  ) +
+  ylim(0, 1) +
+  scale_fill_brewer(palette = "GnBu") +  # Use the "Greens" palette directly
+  theme(
+    plot.title = element_text(hjust = 0.5),  # Center the title
+    axis.title.x = element_text(vjust = -0.5),  # Adjust X-axis title position
+    axis.title.y = element_text(vjust = -0.5)  # Adjust Y-axis title position
+  )
+simpsonsdiversityinvasion
+```
+```{r Field Differences for Maples Only}
+setwd("/Users/katja/Documents/Master's Thesis/dataforRcsv/")
+data=read_csv("fieldalgomaupercentcovernmds.csv", na="?")
+
+head(data)
+library(car)
+library(dunn.test)
+
+# Check normality
+shapiro_test <- shapiro.test(data$Acer.saccharum)
+print(shapiro_test)
+
+#ANOVA/KRUSKAL TEST
+if (shapiro_test$p.value > 0.05 && levene_test$`Pr(>F)`[1] > 0.05) {
+  anova_result <- aov(Acer.saccharum ~ treatment, data = data)
+  print(summary(anova_result))
+  
+  if (summary(anova_result)[[1]]["Pr(>F)"][1] < 0.05) {
+    print(TukeyHSD(anova_result))
+  }
+} else {
+  kruskal_result <- kruskal.test(Acer.saccharum ~ treatment, data = data)
+  print(kruskal_result)
+  if (kruskal_result$p.value < 0.05) {
+    dunn_result <- dunn.test(data$Acer.saccharum, data$treatment, method = "bonferroni")
+    print(dunn_result)
+  }
+}
+
+summary_stats <- aggregate(Acer.saccharum ~ treatment, data = data, 
+                           FUN = function(x) c(mean = mean(x), std_error = std.error(x)))
+
+summary_stats_df <- data.frame(
+  treatment = summary_stats$treatment,
+  mean = summary_stats$Acer.saccharum[, "mean"],
+  std_error = summary_stats$Acer.saccharum[, "std_error"]
+)
+
+print(summary_stats_df)
+
+```
+
+```{R Field - NMDS Plots}
+setwd("/Users/katja/Documents/Master's Thesis/dataforRcsv/")
+data=read_csv("fieldalgomaupercentcovernmds.csv", na="?")
+print(data)
+any(is.na(data)) 
+
+#metaMDS does not work with NAs in the dataset. Also a good idea to remove samples with no reads
+ord <- metaMDS(data[ ,4:36])  
+ord
+
+#change for the columns you use
+data$nmds1 <- ord$points[,1]
+data$nmds2 <- ord$points[,2]
+attach(data)
+nmds1
+
+results <- with(data, adonis(vegdist(data[ ,4:36]) ~ treatment, permutations =999,method = "bray")) #permanova coding
+results
+
+outlier(nmds1)
+#dont run if not significant
+pairwise.adonis2(data[,4:36]~treatment, data=data) #if differences
+
+my_colors <- c("darkgreen", "lightblue", "lightgreen")
+
+plot1 <- ggplot(data, aes(x = nmds1, y = nmds2, color = factor(treatment))) +
+  geom_point() +
+  stat_ellipse(data = filter(data, treatment == "uninvaded"), aes(group = treatment), color = "darkgreen") +
+  stat_ellipse(data = filter(data, treatment == "edge"), aes(group = treatment), color = "lightblue") +
+  stat_ellipse(data = filter(data, treatment == "invaded"), aes(group = treatment), color = "lightgreen") +
+  scale_color_manual(values = my_colors, breaks = c("uninvaded", "edge", "invaded")) +
+  theme_classic()  + ggtitle("AlgomaU Field NMDS Plot - Percent Cover")
+plot1
+
+
+my_colors_updated <- c("Uninvaded" = "grey", "Edge" = "darkgreen", "Invaded" = "cadetblue")
+
+
+plot1_updated <- ggplot(data, aes(x = nmds1, y = nmds2, color = factor(treatment, levels = c("uninvaded", "edge", "invaded"), labels = c("Uninvaded", "Edge", "Invaded")))) +
+  geom_point() +
+  stat_ellipse(data = filter(data, treatment == "uninvaded"), aes(group = treatment), color = "grey") +
+  stat_ellipse(data = filter(data, treatment == "edge"), aes(group = treatment), color = "darkgreen") +
+  stat_ellipse(data = filter(data, treatment == "invaded"), aes(group = treatment), color = "cadetblue") +
+  scale_color_manual(values = my_colors_updated) +
+  theme_classic() +
+  annotate("text", x = Inf, y = Inf, label = "stress = 0.262", hjust = 1.05, vjust = 32, size = 3.5) +
+  # Remove legend title
+  labs(color = NULL)
+
+plot1_updated
+
+
+#numbers as points graph 
+my_colors_updated <- c("Uninvaded" = "grey", "Edge" = "darkgreen", "Invaded" = "cadetblue")
+
+# Update your plot code to use 'year' as point shapes
+plot1_updated <- ggplot(data, aes(x = nmds1, y = nmds2, color = factor(treatment, levels = c("uninvaded", "edge", "invaded"), labels = c("Uninvaded", "Edge", "Invaded")), shape = factor(year))) +
+  geom_point() +
+  # Ensure stat_ellipse uses the new factor levels correctly; might need adjustment if it doesn't work as expected
+  stat_ellipse(data = filter(data, treatment == "uninvaded"), aes(group = treatment), color = "grey") +
+  stat_ellipse(data = filter(data, treatment == "edge"), aes(group = treatment), color = "darkgreen") +
+  stat_ellipse(data = filter(data, treatment == "invaded"), aes(group = treatment), color = "cadetblue") +
+  # Apply the updated color definitions ensuring they match the new labels
+  scale_color_manual(values = my_colors_updated) +
+  theme_classic() +
+  annotate("text", x = Inf, y = Inf, label = "PERMANOVA: F(2,50) = 20.37, P =0.001, R² = 0.45", hjust = 1, vjust = 29.5 , size = 3.5) +
+  annotate("text", x = Inf, y = Inf, label = "STRESS = 0.14", hjust = 1, vjust = 28, size = 3.5) +
+  # Remove legend title
+  labs(color = NULL) +
+  # Set shape labels
+  scale_shape_manual(values = c("2020" = 1, "2023" = 2))
+plot1_updated <- plot1_updated +
+  labs(color = "Plot Type", shape = "Year")
+
+plot1_updated
+
+plot1_updated <- ggplot(data, aes(x = nmds1, y = nmds2, color = factor(treatment, levels = c("uninvaded", "edge", "invaded"), labels = c("Uninvaded", "Edge", "Invaded")), shape = factor(year))) +
+  geom_point() +
+  # Ensure stat_ellipse uses the new factor levels correctly; might need adjustment if it doesn't work as expected
+  stat_ellipse(data = filter(data, treatment == "uninvaded"), aes(group = treatment), color = "grey") +
+  stat_ellipse(data = filter(data, treatment == "edge"), aes(group = treatment), color = "darkgreen") +
+  stat_ellipse(data = filter(data, treatment == "invaded"), aes(group = treatment), color = "cadetblue") +
+  # Apply the updated color definitions ensuring they match the new labels
+  scale_color_manual(values = my_colors_updated) +
+  theme_classic() +
+  annotate("text", x = Inf, y = Inf, label = expression("PERMANOVA: F"[2*","*50] == "20.37, P = 0.001, R² = 0.45"), hjust = 1, vjust = 1, size = 3.5) +
+  annotate("text", x = Inf, y = Inf, label = "STRESS = 0.14", hjust = 1, vjust = 2.5, size = 3.5) +
+  # Remove legend title
+  labs(color = NULL) +
+  # Set shape labels
+  scale_shape_manual(values = c("2020" = 1, "2023" = 2))
+
+plot1_updated <- plot1_updated +
+  labs(color = "Plot Type", shape = "Year")
+
+plot1_updated
+
+```
+```{r Field - Nutrients}
+#emmeans(model, list(pairwise ~ treatment), adjust = "tukey") #posthoc
+
+#TukeyHSD(aov(shannondiversity ~ year*treatment, data=data))
+#summary (model)
+library(tidyverse)
+setwd("/Users/katja/Documents/Master's Thesis/dataforRcsv/")
+data=read_csv("fieldsoilnutrients.csv", na="?")
+library(rstatix)
+library(emmeans)
+library(plotrix)
+# Model 1
+shapiro_test(data, Phosphorus_Bicarb)
+shapiro_test(data, logPhosphorus_Bicarb)
+
+model1 <- aov(Phosphorus_Bicarb ~ plottype, data=data)
+anova(model1)
+
+model1b <- aov(logPhosphorus_Bicarb ~ plottype, data=data)
+anova(model1b)
+
+# Model 2
+shapiro_test(data, Organic_Matter)
+shapiro_test(data, logOrganic_Matter)
+
+model2 <- aov(logOrganic_Matter ~ plottype, data=data)
+summary(model2)
+anova(model2)
+
+# Model 3
+shapiro_test(data, PBray)
+shapiro_test(data, logPBray)
+
+model3 <- aov(logPBray ~ plottype, data=data)
+summary(model3)
+anova(model3)
+
+# Model 4
+shapiro_test(data, Potassium)
+
+model4 <- aov(Potassium ~ plottype, data=data)
+summary(model4)
+anova(model4)
+
+# Model 5
+shapiro_test(data, Magnesium)
+
+model5 <- aov(Magnesium ~ plottype, data=data)
+summary(model5)
+anova(model5)
+
+# Model 6
+shapiro_test(data, Calcium)
+
+model6 <- aov(Calcium ~ plottype, data=data)
+summary(model6)
+anova(model6)
+
+calcium.df <- data %>%
+  group_by(plottype) %>%
+  summarise(
+    sd = std.error(Calcium, na.rm = TRUE),
+    numberleaves = mean(Calcium, na.rm = TRUE)
+  )
+TukeyHSD(aov(Calcium~ plottype, data = data)) 
+
+summary (model1)
+
+
+# Model 7
+shapiro_test(data, Sodium)
+
+model7 <- aov(Sodium ~ plottype, data=data)
+summary(model7)
+anova(model7)
+
+# Model 9
+shapiro_test(data, CEC_meq)
+
+model9 <- aov(CEC_meq ~ plottype, data=data)
+summary(model9)
+anova(model9)
+
+# Model 10
+shapiro_test(data, K)
+model10 <- aov(K ~ plottype, data=data)
+summary(model10)
+anova(model10)
+
+# Model 11
+shapiro_test(data, h)
+
+model11 <- aov(h ~ plottype, data=data)
+summary(model11)
+anova(model11)
+
+shapiro_test(data, mg)
+
+model12 <- aov(mg ~ plottype, data=data)
+summary(model12)
+anova(model12)
+
+shapiro_test(data, logca)
+
+model12 <- aov(logca ~ plottype, data=data)
+summary(model12)
+anova(model12)
+emmeans(model12, list(pairwise ~ plottype), adjust = "tukey")
+
+# Model 12
+shapiro_test(data, na)
+
+model12 <- aov(logna ~ plottype, data=data)
+summary(model12)
+anova(model12)
+
+# Model 13
+shapiro_test(data, S_ppm)
+             
+model13 <- aov(S_ppm ~ plottype, data=data)
+summary(model13)
+anova(model13)
+emmeans(model13, list(pairwise ~ plottype), adjust = "tukey")
+
+
+S_ppm.df <- data %>%
+  group_by(plottype) %>%
+  summarise(
+    sd = std.error(S_ppm, na.rm = TRUE),
+    numberleaves = mean(S_ppm, na.rm = TRUE)
+  )
+
+# Model 14
+shapiro_test(data, logZn_ppm)
+             
+model14 <- aov(Zn_ppm ~ plottype, data=data)
+summary(model14)
+anova(model14)
+
+# Model 15
+shapiro_test(data, logMn_ppm)
+
+model15 <- aov(Mn_ppm ~ plottype, data=data)
+summary(model15)
+anova(model15)
+
+# Model 16
+shapiro_test(data,Fe_ppm)
+
+model16 <- aov(Fe_ppm ~ plottype, data=data)
+summary(model16)
+anova(model16)
+
+# Model 17
+shapiro_test(data, logCu_ppm)
+             
+model17 <- aov(Cu_ppm ~ plottype, data=data)
+summary(model17)
+anova(model17)
+
+# Model 18
+
+
+# Model 19
+shapiro_test(data, Saturation_p_percent)
+
+model19 <- aov(Saturation_p_percent ~ plottype, data=data)
+summary(model19)
+anova(model19)
+
+# Model 20
+shapiro_test(data, Al_ppm)
+
+model20 <- aov(Al_ppm ~ plottype, data=data)
+summary(model20)
+anova(model20)
+
+# Model 21
+shapiro_test(data, Saturation_Al_percent)
+
+model21 <- aov(Saturation_Al_percent ~ plottype, data=data)
+summary(model21)
+anova(model21)
+
+# Model 22
+shapiro_test(data, K_Mg_Ratio)
+             
+model22 <- aov(K_Mg_Ratio ~ plottype, data=data)
+summary(model22)
+anova(model22)
+
+# Model 23
+shapiro_test(data, logENR)
+shapiro_test(data, ENR)
+             
+model23 <- aov(ENR ~ plottype, data=data)
+summary(model23)
+anova(model23)
+
+#model23
+shapiro_test(data, CN_ratio)
+             
+Model24 <- aov(CN_ratio ~ plottype, data=data)
+anova(Model24)
+
+
+
+
+
+#non normal data
+# Model 8
+shapiro_test(data, logpH)
+shapiro_test(data, pH)
+kruskal_test_result <- kruskal.test(pH ~ plottype, data = data)
+print(kruskal_test_result)
+
+shapiro_test(data, logENR)
+shapiro_test(data, ENR)
+kruskal_test_result2 <- kruskal.test(ENR ~ plottype, data = data)
+print(kruskal_test_result2)
+
+
+shapiro_test(data, logB_ppm)
+shapiro_test(data, B_ppm)
+kruskal_test_result3 <- kruskal.test(B_ppm ~ plottype, data = data)
+print(kruskal_test_result3)
+
+
+
+S_ppm.df
+calcium.df
+```
+
+
+
+
+##CHAPTER 2
