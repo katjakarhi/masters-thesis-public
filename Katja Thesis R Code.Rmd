@@ -43,7 +43,6 @@ library(ggbiplot)
 
 ##CHAPTER 1
 ```{r Simpsons/Shannons Diversity Calculations DFs}
-setwd("/Users/katja/Documents/Master's Thesis/dataforRcsv/")
 data=read_csv("fieldalgomaupercentcover.csv", na="?")
 attach(data)
 summary(data)
@@ -65,7 +64,6 @@ plot(simpsonplot)
 ```
 ```{r Diversity Analysis Using Percent Cover}
 library(tidyverse)
-setwd("/Users/katja/Documents/Master's Thesis/dataforRcsv/")
 data=read_csv("fieldalgomaupercentcoverdiversitycalculations.csv", na="?")
 attach(data)
 data
@@ -138,7 +136,7 @@ simpsonsdiversityinvasion <- ggplot(data, aes(x = treatment, y = simpsonsdiversi
 simpsonsdiversityinvasion
 ```
 ```{r Field Differences for Maples Only}
-setwd("/Users/katja/Documents/Master's Thesis/dataforRcsv/")
+
 data=read_csv("fieldalgomaupercentcovernmds.csv", na="?")
 
 head(data)
@@ -179,7 +177,7 @@ print(summary_stats_df)
 
 ```
 ```{R Field - NMDS Plots}
-setwd("/Users/katja/Documents/Master's Thesis/dataforRcsv/")
+
 data=read_csv("fieldalgomaupercentcovernmds.csv", na="?")
 print(data)
 any(is.na(data)) 
@@ -231,7 +229,7 @@ finalplot
 #TukeyHSD(aov(shannondiversity ~ year*treatment, data=data))
 #summary (model)
 library(tidyverse)
-setwd("/Users/katja/Documents/Master's Thesis/dataforRcsv/")
+
 data=read_csv("fieldsoilnutrients.csv", na="?")
 library(rstatix)
 library(emmeans)
@@ -457,7 +455,7 @@ calcium.df
 ##CHAPTER 2
 ```{r Pot Diversity - Percent Cover}
 library(plyr)
-setwd("/Users/katja/Documents/Master's Thesis/dataforRcsv/")
+
 
 #percent cover 
 data=read_csv("percentcoverpot.csv", na="?")
@@ -472,7 +470,7 @@ ddply(data,~potid,function(x)
 
 plot(simpsonplot)
 
-setwd("/Users/katja/Documents/Master's Thesis/dataforRcsv/")
+
 data=read_csv("potdiversitycalculations.csv", na="?")
 attach(data)
 
@@ -488,7 +486,7 @@ Anova(model, type="III")
 TukeyHSD(model)
 ```
 ```{r Principal Component analysis}
-setwd("/Users/katja/Documents/Master's Thesis/dataforRcsv/")
+
 data=read_csv("growthtracking.csv", na="?")
 attach(data)
 str(data)
@@ -698,7 +696,7 @@ ggsave("PCAPLOTTHESIS.png", combined_plot, width = 16, height = 5, dpi = 300)
 
 ```
 ```{r Growth Tracking - Acer}
-setwd("/Users/katja/Documents/Master's Thesis/dataforRcsv/")
+
 data=read_csv("growthtracking.csv", na="?")
 attach(data)
 str(data)
@@ -740,7 +738,7 @@ print(tukey_invasion)
 
 ```
 ```{r Growth Tracking - Hempnettle}
-setwd("/Users/katja/Documents/Master's Thesis/dataforRcsv/")
+
 data=read_csv("growthtracking.csv", na="?")
 attach(data)
 str(data)
@@ -782,7 +780,7 @@ print(tukey_invasion)
 ```
 ```{r Growth Tracking - Bindweed}
 library(tidyverse)
-setwd("/Users/katja/Documents/Master's Thesis/dataforRcsv/")
+
 data=read_csv("growthtracking.csv", na="?")
 attach(data)
 str(data)
@@ -829,7 +827,7 @@ library(lme4)
 library(car)
 library(effects)
 library(MASS)
-setwd("/Users/katja/Documents/Master's Thesis/dataforRcsv/")
+
 data=read_csv("growthtracking.csv", na="?")
 attach(data)
 str(data)
@@ -884,7 +882,7 @@ effect_plot <- plot(allEffects(lmm_model, xlevels = list(shadetreatment = c("ear
                                                          season = c("early", "mid", "late"))))
 ```
 ```{r Growth Tracking Linear Mixed Models w Random Effects - unused in thesis}
-setwd("/Users/katja/Documents/Master's Thesis/dataforRcsv/")
+
 data=read_csv("growthtracking.csv", na="?")
 attach(data)
 str(data)
